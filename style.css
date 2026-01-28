@@ -1,0 +1,53 @@
+/* VIDEO BACKGROUND */
+#bgVideo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2; /* behind everything */
+}
+
+/* VIDEO BACKGROUND */
+#bgVideo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2; /* behind everything */
+}
+
+/* GRADIENT OVERLAY */
+.gradient-overlay {
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: linear-gradient(270deg, #ff0099, #493240, #00ffff, #ff6f00, #ff0099);
+  background-size: 1000% 1000%;
+  animation: flowGradient 30s ease infinite;
+  mix-blend-mode: screen;
+  z-index: -1; /* above video, below UI */
+  pointer-events: none;
+}
+
+@keyframes flowGradient {
+  0% {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100% {background-position:0% 50%;}
+}
+
+.quick-links a { display:inline-block; margin:0 10px; }
+.quick-links .quick-icon {
+  width:40px; height:40px;
+  transition: transform 0.3s, filter 0.3s;
+}
+.quick-links .quick-icon:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 10px #fff);
+}
+
+

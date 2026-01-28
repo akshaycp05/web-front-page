@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Custom New Tab Minimal",
+  "version": "1.0",
+  "description": "Minimal working Chrome New Tab",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "icons": {
+    "16": "profile.png",
+    "48": "profile.png",
+    "128": "profile.png"
+  }
+}

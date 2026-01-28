@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cosmic Live Tab</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; font-family: Arial, sans-serif; overflow: hidden; background:#000; }
+
+/* VIDEO BACKGROUND */
+#bgVideo { position: fixed; top:0; left:0; width:100%; height:100%; object-fit: cover; z-index: -2; filter: brightness(0.7); opacity: 0; animation: fadeIn 2s forwards; }
+.gradient-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, rgba(255,20,147,0.2), rgba(0,191,255,0.2)); z-index: -1; pointer-events: none; opacity: 0; animation: fadeIn 2s 0.5s forwards; }
+#particles-js { position:absolute; width:100%; height:100%; z-index:0; }
+#weatherEffect { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1; }
+#lightningFlash { position: fixed; top:0; left:0; width:100%; height:100%; background: white; opacity: 0; pointer-events:none; z-index:-1; transition: opacity 0.1s ease; }
+
+/* GLASS UI */
+.glass { position: relative; backdrop-filter: blur(15px); background: rgba(255,255,255,0.15); border-radius: 20px; padding: 12px; color:#fff; z-index:2; opacity:0; animation: fadeIn 1s 1s forwards; }
+
+/* TOP BAR & TABS */
+.top-bar { width:90%; max-width:900px; margin:20px auto; display:flex; justify-content:space-between; align-items:center; }
+#tabsContainer { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.tab { padding:5px 15px; border-radius:8px 8px 0 0; cursor:pointer; background:rgba(255,255,255,0.2); position:relative; user-select:none; transition: all 0.3s; }
+.tab.active { background:rgba(255,255,255,0.8); color:#000; font-weight:bold; }
+.tab .closeTab { position:absolute; top:0; right:2px; font-size:12px; color:red; cursor:pointer; }
+#addTab { padding:5px 10px; background:rgba(0,200,255,0.6); border-radius:5px; cursor:pointer; font-weight:bold; }
+
+/* TAB CONTENT */
+#tabContent { margin:0 auto; padding:20px; max-width:900px; text-align:center; font-size:20px; color:#fff; opacity:0; animation: fadeIn 1s 1.5s forwards; }
+
+/* PROFILE */
+.profile { width:100px; height:100px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; border:2px solid rgba(255,255,255,0.8); margin:30px auto; transition: all 0.3s ease; }
+.profile img { width:150%; height:150%; object-fit:cover; object-position:center; transition: transform 0.4s ease; }
+.profile:hover img { transform: scale(1.2) rotate(10deg); }
+.profile:hover { box-shadow:0 0 30px 10px rgba(0,255,255,0.6),0 0 50px 20px rgba(255,0,255,0.4); transition: transform 0.4s ease, box-shadow 0.4s ease; }
+
+/* SEARCH BAR */
+.search-wrapper { margin:40px auto 0 auto; width:90%; max-width:600px; }
+.search-box { display:flex; width:100%; border-radius:25px; padding:12px 20px; background:rgba(255,255,255,0.2);}
+.search-box input { flex:1; border:none; outline:none; background:transparent; color:#fff; font-size:18px;}
+.search-box button { margin-left:10px; border:none; border-radius:20px; padding:10px 18px; background:#1a73e8; color:white; cursor:pointer; }
+
+/* QUICK LINKS */
+.quick-links { display:flex; gap:30px; margin:30px auto 0 auto; justify-content:center;}
+.quick-links a { color:#fff; transition: transform 0.3s, color 0.3s; font-size:32px; }
+.quick-links a:hover { transform: scale(1.3); color:#ff0; }
+
+/* CLOCK + MOON */
+#clockWrapper { max-width:200px; margin:20px auto; text-align:center; font-size:18px; }
+
+/* AI Assistant */
+#aiAssistant { position:fixed; bottom:30px; right:30px; width:200px; cursor:pointer; text-align:center; }
+
+/* NOTIFICATIONS */
+#notifications div { margin-top:10px; }
+
+/* RESPONSIVE */
+@media(max-width:600px){ 
+  .search-box input{ font-size:16px;} 
+  #tabsContainer{flex-wrap:wrap;} 
+  .quick-links{flex-wrap:wrap; gap:15px;} 
+}
+
+/* FADE-IN */
+@keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<!-- VIDEO BACKGROUND -->
+<video autoplay muted loop id="bgVideo" preload="auto">
+  <source src="live_wallpaper.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+<div class="gradient-overlay"></div>
+<div id="particles-js"></div>
+<div id="weatherEffect"></div>
+<div id="lightningFlash"></div>
+
+<!-- TOP BAR -->
+<div class="top-bar glass">
+  <div id="tabsContainer">
+    <!-- Initial Tab -->
+    <div class="tab active" data-content="Welcome to your new tab!">New Tab <span class="closeTab" style="display:none;">×</span></div>
+    <div id="addTab">+</div>
+  </div>
+  <div class="clock" id="clock"></div>
+</div>
+
+<!-- TAB CONTENT -->
+<div id="tabContent" class="glass">Welcome to your new tab!</div>
+
+<!-- PROFILE -->
+<div class="profile glass">
+  <img src="profile.png" alt="Profile">
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrapper glass">
+  <div class="search-box">
+    <input id="searchInput" type="text" placeholder="Search or type a URL">
+    <button onclick="search()">Search</button>
+  </div>
+</div>
+
+<!-- QUICK LINKS -->
+<div class="quick-links glass">
+  <a href="https://www.youtube.com" target="_blank"><i class="fab fa-youtube"></i></a>
+  <a href="https://mail.google.com" target="_blank"><i class="fab fa-google"></i></a>
+  <a href="https://www.github.com" target="_blank"><i class="fab fa-github"></i></a>
+  <a href="https://www.tradingview.com" target="_blank"><i class="fas fa-chart-line"></i></a>
+</div>
+
+<!-- WEATHER WIDGET -->
+<div id="weather" class="glass">
+  <div id="weatherIcon">☁️</div>
+  <div id="weatherCity">Loading...</div>
+  <div id="weatherTemp"></div>
+  <div id="weatherDesc" style="font-style:italic;"></div>
+</div>
+
+<!-- CLOCK + MOON -->
+<div id="clockWrapper" class="glass">
+  <div id="digitalClock"></div>
+  <div id="dateInfo"></div>
+  <div id="moonPhase">🌑</div>
+</div>
+
+<!-- AI Assistant -->
+<div id="aiAssistant" class="glass">🤖 Ask Me</div>
+
+<!-- NOTIFICATIONS -->
+<div id="notifications"></div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+/* ===== PARTICLES ===== */
+particlesJS("particles-js", {
+  "particles": {
+    "number":{"value":150,"density":{"enable":true,"value_area":900}},
+    "color":{"value":["#ff0099","#00ffff","#ffff00","#ff6f00"]},
+    "shape":{"type":"circle"},
+    "opacity":{"value":0.6,"random":true},
+    "size":{"value":3,"random":true},
+    "line_linked":{"enable":true,"distance":160,"color":"#fff","opacity":0.3,"width":1},
+    "move":{"enable":true,"speed":2.5,"direction":"none","random":true,"straight":false,"out_mode":"out"}
+  },
+  "interactivity":{"detect_on":"canvas","events":{"onhover":{"enable":true,"mode":"grab"},"onclick":{"enable":true,"mode":"push"},"resize":true},"modes":{"grab":{"distance":180,"line_linked":{"opacity":0.6}},"push":{"particles_nb":20}}},
+  "retina_detect":true
+});
+
+/* ===== CLOCK ===== */
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").textContent = now.toLocaleTimeString();
+  document.getElementById("digitalClock").textContent = now.toLocaleTimeString();
+  document.getElementById("dateInfo").textContent = now.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+  const moon=Math.floor((now.getDate()/30)*8);
+  const phases=["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"];
+  document.getElementById("moonPhase").textContent = phases[moon];
+}
+setInterval(updateClock,1000); updateClock();
+
+/* ===== SEARCH ===== */
+function search() {
+  const query = document.getElementById("searchInput").value.trim();
+  if(!query) return;
+  if(query.startsWith("http://") || query.startsWith("https://")) window.open(query, "_blank");
+  else window.open("https://www.google.com/search?q=" + encodeURIComponent(query), "_blank");
+}
+document.getElementById("searchInput").addEventListener("keydown", e => { if(e.key==="Enter") search(); });
+
+/* ===== DYNAMIC TABS ===== */
+const tabsContainer = document.getElementById("tabsContainer");
+const tabContent = document.getElementById("tabContent");
+
+// Add new tab
+document.getElementById("addTab").addEventListener("click", ()=>{
+  const newTab = document.createElement("div");
+  newTab.className = "tab active";
+  newTab.dataset.content = "New Tab Content";
+  newTab.innerHTML = "New Tab <span class='closeTab'>×</span>";
+  tabsContainer.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  tabsContainer.insertBefore(newTab, document.getElementById("addTab"));
+  tabContent.textContent = newTab.dataset.content;
+});
+
+// Tab click (event delegation)
+tabsContainer.addEventListener("click", e=>{
+  const tab = e.target.closest(".tab");
+  if(!tab) return;
+
+  // Close button
+  if(e.target.classList.contains("closeTab")){
+    if(tab.classList.contains("active")){
+      const prev = tab.previousElementSibling || tab.nextElementSibling;
+      if(prev && prev.classList.contains("tab")) { prev.classList.add("active"); tabContent.textContent = prev.dataset.content; }
+      else tabContent.textContent = "";
+    }
+    tab.remove();
+    return;
+  }
+
+  // Activate tab
+  tabsContainer.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  tab.classList.add("active");
+  tabContent.textContent = tab.dataset.content;
+});
+
+// Make tabs draggable
+let draggedTab = null;
+tabsContainer.addEventListener("dragstart", e => { draggedTab = e.target; });
+tabsContainer.addEventListener("dragover", e => { e.preventDefault(); });
+tabsContainer.addEventListener("drop", e => {
+  e.preventDefault();
+  const targetTab = e.target.closest(".tab");
+  if(!targetTab || targetTab===draggedTab) return;
+  tabsContainer.insertBefore(draggedTab, targetTab.nextSibling);
+  draggedTab = null;
+});
+
+/* ===== WEATHER ===== */
+const apiKey = "YOUR_API_KEY"; // OpenWeatherMap API key
+async function fetchWeather(city="Mumbai") {
+  try {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
+    const data = await res.json();
+    document.getElementById("weatherCity").textContent = data.name;
+    document.getElementById("weatherTemp").textContent = Math.round(data.main.temp)+"°C";
+    document.getElementById("weatherDesc").textContent = data.weather[0].description;
+    let main = data.weather[0].main;
+    let icon="☁️";
+    if(main==="Clear") icon="☀️"; else if(main==="Rain") icon="🌧️";
+    else if(main==="Snow") icon="❄️"; else if(main==="Thunderstorm") icon="⛈️";
+    else if(main==="Drizzle") icon="🌦️"; else if(main==="Mist"||main==="Fog") icon="🌫️";
+    document.getElementById("weatherIcon").textContent = icon;
+  } catch(e){ console.log(e); }
+}
+fetchWeather(); setInterval(fetchWeather,600000);
+
+/* ===== AI ASSISTANT ===== */
+document.getElementById("aiAssistant").addEventListener("click",()=>{
+  const messages = ["🌟 Stars are beautiful tonight!","🚀 Remember to take a break!","💫 The universe is vast and full of wonders."];
+  alert(messages[Math.floor(Math.random()*messages.length)]);
+});
+
+/* ===== NOTIFICATIONS ===== */
+function createNotification(msg){
+  const n = document.createElement("div");
+  n.className="glass"; n.style.padding="15px"; n.style.opacity=0; n.style.transition="opacity 0.5s, transform 0.5s";
+  n.textContent = msg;
+  document.getElementById("notifications").appendChild(n);
+  requestAnimationFrame(()=>{ n.style.opacity=1; n.style.transform="translateY(0)"; });
+  setTimeout(()=>n.remove(),4000);
+}
+setInterval(()=>createNotification("✨ Cosmic Tab says hi!"),15000);
+</script>
+</body>
+</html>
